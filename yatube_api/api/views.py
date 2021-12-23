@@ -1,12 +1,18 @@
-from rest_framework import filters, serializers, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 
-from posts.models import Follow, Group, Post, User
+from posts.models import Group, Post
 from .permissions import AuthorOrReadOnlyPermission, FollowerPermission
 from .serializers import (CommentSerializer, FollowSerializer, GroupSerializer,
                           PostSerializer)
+
+
+class CreateListRetrieveViewSet(mixins.CreateModelMixin,
+                                mixins.ListModelMixin,
+                                viewsets.GenericViewSet):
+    pass
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -40,21 +46,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         return comments_queryset
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(CreateListRetrieveViewSet):
     serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated, FollowerPermission]
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('following__username',)
+    search_fields = ('user__username', 'following__username')
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        author_username = serializer.validated_data.get('following')
-        author = get_object_or_404(User, username=author_username)
-        queryset = Follow.objects.filter(
-            user=self.request.user).filter(following=author)
-        if self.request.user == author or queryset.exists():
-            raise serializers.ValidationError(
-                'Повторные и самоподписки запрещены')
-        serializer.save(following=author, user=self.request.user)
+        return self.request.user.follower.all()
