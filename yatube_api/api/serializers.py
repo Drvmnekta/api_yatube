@@ -53,14 +53,9 @@ class FollowSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def create(self, validated_data):
+    def validate_following(self, value):
         user = self.context.get('request').user
-        author_username = validated_data.get('following')
-        author = get_object_or_404(User, username=author_username)
-        queryset = Follow.objects.filter(
-            user=user).filter(following=author)
-        if user == author or queryset.exists():
-            raise serializers.ValidationError(
-                'Повторные и самоподписки запрещены')
-        obj = Follow.objects.create(following=author, user=user)
-        return obj
+        author = get_object_or_404(User, username=value)
+        if author == user or author is None:
+            raise serializers.ValidationError('Самоподписки запрещены')
+        return value
