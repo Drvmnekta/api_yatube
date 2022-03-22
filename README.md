@@ -14,6 +14,8 @@ API для социальной сети YaTube.
 - Python 3.9
 - Django REST Framework 3.12.4
 - Django 2.2.16
+- Djangorestframework-simplejwt 4.7.2
+- Pillow 8.3.1
 
 
 ### Как запустить проект:
