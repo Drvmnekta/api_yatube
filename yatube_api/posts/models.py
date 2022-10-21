@@ -1,3 +1,5 @@
+"""Module with models of posts app."""
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -5,15 +7,20 @@ User = get_user_model()
 
 
 class Group(models.Model):
+    """Model of group."""
+
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Get string representation of group object."""
         return self.title
 
 
 class Post(models.Model):
+    """Model of post."""
+
     text = models.TextField()
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     author = models.ForeignKey(
@@ -28,11 +35,14 @@ class Post(models.Model):
         null=True
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Get string representation of post object."""
         return self.text
 
 
 class Comment(models.Model):
+    """Model of comment."""
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments')
     post = models.ForeignKey(
@@ -43,6 +53,8 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
+    """Model of follow."""
+
     user = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -57,6 +69,8 @@ class Follow(models.Model):
     )
 
     class Meta:
+        """Model meta class."""
+        
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
@@ -64,5 +78,6 @@ class Follow(models.Model):
             )
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Get string representation of follow object."""
         return f'{self.user} follows {self.author}'
